@@ -10,15 +10,12 @@ export default function WelcomePage() {
   const role = user.role?.toLowerCase();
 
   useEffect(() => {
-    // Rediriger si pas d'utilisateur
     if (!user.email) {
       navigate("/signup");
     }
   }, [user.email, navigate]);
 
-  /*const handleContinue = () => {
-    navigate(role === "trainer" ? "/trainer" : "/dashboard");
-  };*/
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -102,14 +99,7 @@ export default function WelcomePage() {
             </ul>
           </div>
 
-          {/* Continue Button */}
-          {/*<Button 
-            onClick={handleContinue} 
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-6 text-lg"
-          >
-            Continue to Dashboard
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>*/}
+          
         </CardContent>
       </Card>
     </div>

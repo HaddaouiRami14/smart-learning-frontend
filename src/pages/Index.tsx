@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  BookOpen, TrendingUp, Trophy, Clock, Code, Palette, Database, Briefcase,
-  Award, CheckCircle, Flame, Zap,
-} from "lucide-react";
+import {BookOpen, TrendingUp, Trophy, Clock, Code, Palette, Database, Briefcase,Award, CheckCircle, Flame, Zap,} from "lucide-react";
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -16,78 +13,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePublicCourses } from "@/hooks/usePublicCourses";
 import { useTheme } from "@/hooks/useTheme";
 import { LearnerCourseFilters, LearnerCourseFiltersComponent } from "./LearnerCourseFilters";
+import { useSkillsProgress }                   from "@/hooks/useSkillsProgress";
+import { CATEGORY_CONFIG, getFallbackConfig }  from "@/hooks/skillCategoryConfig";
+import { Skeleton }                            from "@/components/ui/skeleton";
+import { useRecentActivities } from "@/hooks/useRecentActivities";
 
-const skills = [
-  {
-    name: "React Development",
-    level: "Advanced",
-    progress: 78,
-    icon: Code,
-    color: "primary" as const,
-    lessonsCompleted: 24,
-    totalLessons: 32,
-  },
-  {
-    name: "UI/UX Design",
-    level: "Intermediate",
-    progress: 56,
-    icon: Palette,
-    color: "secondary" as const,
-    lessonsCompleted: 14,
-    totalLessons: 25,
-  },
-  {
-    name: "Database Management",
-    level: "Beginner",
-    progress: 35,
-    icon: Database,
-    color: "info" as const,
-    lessonsCompleted: 7,
-    totalLessons: 20,
-  },
-  {
-    name: "Project Management",
-    level: "Intermediate",
-    progress: 62,
-    icon: Briefcase,
-    color: "warning" as const,
-    lessonsCompleted: 18,
-    totalLessons: 29,
-  },
-];
 
-const activities = [
-  {
-    icon: Trophy,
-    title: "Achievement Unlocked!",
-    description: 'Earned "React Master" badge',
-    time: "2 hours ago",
-    type: "achievement" as const,
-  },
-  {
-    icon: CheckCircle,
-    title: "Lesson Completed",
-    description: "Advanced State Management - Module 4",
-    time: "4 hours ago",
-    type: "course" as const,
-  },
-  {
-    icon: Flame,
-    title: "Streak Milestone",
-    description: "You're on a 12-day learning streak!",
-    time: "1 day ago",
-    type: "streak" as const,
-  },
-  {
-    icon: Zap,
-    title: "Skill Level Up",
-    description: "React Development reached Advanced level",
-    time: "2 days ago",
-    type: "skill" as const,
-  },
-];
 
-// ✅ nouveau
 interface Enrollment {
   id: number;
   courseId: number;
@@ -100,14 +32,33 @@ const Index = () => {
   const navigate = useNavigate();
   const { data: courses, isLoading: coursesLoading } = usePublicCourses();
   const [showAllCourses, setShowAllCourses] = useState(false);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const { theme } = useTheme();
+  const [searchQuery, setSearchQuery] = useState("");
+  const { activities, isLoading: activitiesLoading } = useRecentActivities();
+  const [showAllActivities, setShowAllActivities] = useState(false);
 
   // ✅ nouveaux états
   const [filters, setFilters] = useState<LearnerCourseFilters>({});
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [enrollmentsLoading, setEnrollmentsLoading] = useState(true);
 
-  // Username depuis le token (fichier 1)
+  const { skills, overallProgress, isLoading, error, refetch } = useSkillsProgress();
+  const mappedSkills = skills.map((skill) => {
+  const config = CATEGORY_CONFIG[skill.category] ?? getFallbackConfig();
+  return {
+    name:             skill.categoryLabel,   
+    level:            skill.level,           
+    progress:         skill.progressPercentage,
+    icon:             config.icon,
+    color:            config.color,
+    enrolledCourses:  skill.enrolledCourses,
+    completedCourses: skill.completedCourses,
+  };
+});
+
+const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
+
   const getUsername = () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
@@ -116,9 +67,9 @@ const Index = () => {
   };
   const username = getUsername();
 
-  // ✅ nouveau : filtrage des cours
   const filteredCourses = (courses ?? [])
     .filter(c => c.isActive)
+    .filter(c =>!searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase()) || c.description?.toLowerCase().includes(searchQuery.toLowerCase()))
     .filter(c => !filters.category || c.category === filters.category)
     .filter(c => !filters.level || c.level === filters.level)
     .filter(c => filters.minPrice === undefined || c.price >= filters.minPrice)
@@ -126,7 +77,6 @@ const Index = () => {
 
   const visibleCourses = showAllCourses ? filteredCourses : filteredCourses.slice(0, 3);
 
-  // ✅ nouveau : récupération de l'userId depuis localStorage
   const getUserId = (): number | null => {
     try {
       const stored = localStorage.getItem("user");
@@ -135,7 +85,6 @@ const Index = () => {
     } catch { return null; }
   };
 
-  // ✅ nouveau : fetch des enrollments
   useEffect(() => {
     const fetchEnrollments = async () => {
       const userId = getUserId();
@@ -154,11 +103,9 @@ const Index = () => {
     fetchEnrollments();
   }, []);
 
-  // ✅ nouveau : progression par cours
   const getCourseProgress = (courseId: string): number | undefined =>
     enrollments.find(e => e.courseId === parseInt(courseId))?.progression;
 
-  // Redirect selon le rôle
   useEffect(() => {
     if (role === "FORMATEUR") {
       navigate("/trainer", { replace: true });
@@ -176,7 +123,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery}/>
       <Sidebar />
 
       <main className="ml-64 pt-6 px-8 pb-12">
@@ -238,23 +185,52 @@ const Index = () => {
           </div>
 
           {/* Recent Activity */}
-          <div className="animate-fade-in" style={{ animationDelay: "0.6s" }}>
-            <div className="rounded-xl border border-border bg-card p-6 h-full">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Recent Activity
-                </h3>
-                <Button variant="ghost" size="sm" className="text-secondary">
-                  View All
-                </Button>
-              </div>
-              <div className="space-y-1">
-                {activities.map((activity, index) => (
-                  <ActivityItem key={index} {...activity} />
-                ))}
+            <div className="animate-fade-in" style={{ animationDelay: "0.6s" }}>
+              <div className="rounded-xl border border-border bg-card p-6 h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Recent Activity
+                  </h3>
+                  {activities.length > 4 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-secondary"
+                      onClick={() => setShowAllActivities(prev => !prev)}
+                    >
+                      {showAllActivities ? "Show Less" : "View All"}
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  {activitiesLoading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-4 p-4 animate-pulse">
+                        <div className="h-9 w-9 rounded-full bg-muted" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 bg-muted rounded w-1/3" />
+                          <div className="h-3 bg-muted rounded w-2/3" />
+                        </div>
+                      </div>
+                    ))
+                  ) : activities.length > 0 ? (
+                    activities.slice(0, showAllActivities ? 10 : 4).map(activity => (
+                      <ActivityItem
+                        key={activity.id}
+                        type={activity.type}
+                        title={activity.title}
+                        description={activity.description}
+                        timeAgo={activity.timeAgo}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-6">
+                      No recent activity yet.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
         </div>
 
         {/* Skills Section */}
@@ -268,22 +244,47 @@ const Index = () => {
                 Track your progress across different domains
               </p>
             </div>
-            <Button variant="outline" className="gap-2">
+            {mappedSkills.length > 2 && (
+            <Button
+              className="gap-2 bg-gradient-primary hover:opacity-90"
+              onClick={() => setShowAllSkills(prev => !prev)}
+            >
               <TrendingUp className="h-4 w-4" />
-              View All Skills
+              {showAllSkills ? "Show Less" : "Show All Skills"}
             </Button>
+            )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {skills.map((skill, index) => (
-              <div
-                key={skill.name}
-                className="animate-fade-in"
-                style={{ animationDelay: `${0.1 * (index + 1)}s` }}
-              >
-                <SkillCard {...skill} />
-              </div>
-            ))}
-          </div>
+        
+          {/* Loading */}
+          {isLoading && (                                  // ← "isLoading", pas "loading"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-28 rounded-lg" />
+              ))}
+            </div>
+          )}
+        
+          {/* Error */}
+          {error && (
+            <p className="text-sm text-muted-foreground">
+              Unable to load skills. Please try again later.
+            </p>
+          )}
+        
+          {/* Data */}
+          {!isLoading && !error && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {displayedSkills.map((skill, index) => (
+                <div
+                  key={skill.name}                          // ← skill.name vient du mapping
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${0.1 * (index + 1)}s` }}
+                >
+                  <SkillCard {...skill} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Courses Section */}

@@ -35,6 +35,7 @@ const categories = [
   "All Categories",
   "Programming",
   "Design",
+  "DataScience",
   "Business",
   "Marketing",
   "Photography",

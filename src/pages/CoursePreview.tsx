@@ -64,7 +64,6 @@ const CoursePreview = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Quiz states
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<{ [key: number]: number }>({});
   const [quizMultiAnswers, setQuizMultiAnswers] = useState<{ [key: number]: number[] }>({});
@@ -73,20 +72,17 @@ const CoursePreview = () => {
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
-  // Exercise states
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [exerciseCode, setExerciseCode] = useState('');
   const [exerciseResult, setExerciseResult] = useState<ExerciseResult | null>(null);
   const [runningCode, setRunningCode] = useState(false);
   const [showHints, setShowHints] = useState(false);
 
-  // Resource states (preview feature from file 1)
   const [resources, setResources] = useState<Resource[]>([]);
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
 
-  // ── Resource helpers ──────────────────────────────────────────────────────
 
   const loadResources = async (chapterId: number) => {
     try {
@@ -148,7 +144,6 @@ const CoursePreview = () => {
     } catch { setError('Erreur lors du téléchargement'); }
   };
 
-  // ── Effects ───────────────────────────────────────────────────────────────
 
   useEffect(() => { loadCourseAndChapters(); }, [courseId]);
 
@@ -169,7 +164,6 @@ const CoursePreview = () => {
     }
   }, [selectedChapter]);
 
-  // ── Data loaders ──────────────────────────────────────────────────────────
 
   const loadCourseAndChapters = async () => {
     try {
@@ -207,7 +201,6 @@ const CoursePreview = () => {
     } catch { setExercise(null); setExerciseCode(''); }
   };
 
-  // ── Quiz handlers ─────────────────────────────────────────────────────────
 
   const handleTrueFalseAnswer = (questionId: number, optionId: number) => {
     setQuizAnswers(prev => ({ ...prev, [questionId]: optionId }));
@@ -265,7 +258,6 @@ const CoursePreview = () => {
     window.scrollTo({ top: document.getElementById('quiz-section')?.offsetTop || 0, behavior: 'smooth' });
   };
 
-  // ── Exercise handler ──────────────────────────────────────────────────────
 
   const runExercise = async () => {
     if (!exercise || !selectedChapter) return;
@@ -285,7 +277,6 @@ const CoursePreview = () => {
     } finally { setRunningCode(false); }
   };
 
-  // ── Utility helpers ───────────────────────────────────────────────────────
 
   const getLanguageForMonaco = (lang: string) =>
     ({ 'PYTHON': 'python', 'JAVASCRIPT': 'javascript', 'JAVA': 'java' }[lang] || 'python');
@@ -323,7 +314,6 @@ const CoursePreview = () => {
     'EDITOR_ANSWER':   'bg-teal-100 text-teal-700',
   }[type] || 'bg-slate-100 text-slate-700');
 
-  // ── Guards ────────────────────────────────────────────────────────────────
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -344,7 +334,6 @@ const CoursePreview = () => {
 
   const currentIndex = chapters.findIndex(c => c.id === selectedChapter?.id);
 
-  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-background">

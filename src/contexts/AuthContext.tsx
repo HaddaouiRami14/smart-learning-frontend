@@ -65,7 +65,6 @@ export const useAuth = () => {
   return context;
 };
 
-// API Base URL
 const API_BASE_URL = "http://localhost:8080/api";
 
 // ✅ Vérifie si le token JWT est expiré
@@ -92,7 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearStorage();
       return null; // ✅ Force re-login (local ou Google)
     }
-    //return stored ? JSON.parse(stored) : null;
      return JSON.parse(stored);
   });
 
@@ -115,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [loading] = useState(false);
 
-  // ✅ Pendant la session : vérifie le token à chaque changement d'état
+  //  Pendant la session : vérifie le token à chaque changement d'état
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -124,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setSession(null);
       setRole(null);
-      window.location.href = "/login"; // ✅ Redirige vers login (local ou Google)
+      window.location.href = "/login"; //  Redirige vers login (local ou Google)
     }
   }, [user]);
 
@@ -139,12 +137,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await response.json();
 
-      // Vérifie si la réponse du serveur est OK
       if (!response.ok) {
         return { error: new Error(data.message || "Signup failed") };
       }
 
-      // Si tout s'est bien passé, on peut créer l'utilisateur et la session
       const userData: User = {
         id: data.user.id,
         username: data.user.username || username,
@@ -186,7 +182,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await response.json();
 
-      // Check if token exists (successful login)
       if (!data.token) {
         return { error: new Error(data.message || "Invalid username or password") };
       }
@@ -229,7 +224,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await response.json();
 
-      // ✅ Gérer le cas ban (403) spécifiquement
       if (response.status === 403) {
         return {
           error: {

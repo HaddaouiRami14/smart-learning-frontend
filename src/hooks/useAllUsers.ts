@@ -24,7 +24,6 @@ interface UserDTO {
 
 const API_BASE = "/api/admin/users";
 
-// ✅ Même pattern que useAllCourses
 const getAuthHeaders = () => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -85,7 +84,6 @@ export const useAllUsers = () => {
     }
   }, []);
 
-  // ✅ durationDays: undefined = permanent, number = temporaire
   const banUser = useCallback(async (userId: string, durationDays?: number) => {
     const endpoint = `${API_BASE}/${userId}/ban`;
     const body = durationDays ? { durationDays } : {};
@@ -126,7 +124,6 @@ export const useAllUsers = () => {
     }
   }, []);
 
-   // ✅ Nouvelle fonction unbanUser
   const unbanUser = useCallback(async (userId: string) => {
     const endpoint = `${API_BASE}/${userId}/unban`;
 
@@ -141,7 +138,6 @@ export const useAllUsers = () => {
         throw new Error(errorData.message || "Failed to unban user");
       }
 
-      // ✅ Mise à jour optimiste de l'état local
       setUsers(prev =>
         prev.map(u =>
           u.user_id === userId ? { ...u, isBanned: false, banExpiresAt: null } : u

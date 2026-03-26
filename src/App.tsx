@@ -25,12 +25,13 @@ import { TrainerProfile } from "./components/trainer/TrainerProfile";
 import Courses from "./pages/Courses";
 import CoursePreview from "./pages/CoursePreview";
 import LearnerCoursePreview from "./pages/LearnerCoursePreview";
+import LearnerCourses from "./pages/LearnerCourses";
 
 
 const queryClient = new QueryClient();
 
 //const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_ID = "944764206669-28i71a3c3dpd58eqo1nidlffjriv5cc9.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "642160482180-cf2v2gh3kp532qv110vq7o15elg0ios7.apps.googleusercontent.com";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -48,16 +49,16 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/oauth2/callback" element={<OAuth2Callback />} />
-                          {/* NOUVELLES ROUTES */}
               <Route path="/courses/:courseId" element={<CourseDetail />} />
-              <Route path="/courses/:courseId/preview" element={<CoursePreview />} /> {/* ✅ ADDED */}
-              <Route path="/courses/:courseId/learnerpreview" element={<LearnerCoursePreview />} /> {/* ✅ ADDED */}
+              <Route path="/courses/:courseId/preview" element={<CoursePreview />} /> 
+              <Route path="/courses/:courseId/learnerpreview" element={<LearnerCoursePreview />} /> 
 
               <Route path='/courses/:courseId/chapters/:chapterId' element={<ChapterDetail/>} />
               <Route path="/courses/:courseId/chapters/new" element={<ChapterEditor />} />
               <Route path="/courses/:courseId/chapters/:chapterId/edit" element={<ChapterEditor />} />
               <Route path="/trainer/profile" element={<TrainerProfile />} />
               <Route path="/courses" element={<Courses />} />
+              <Route path="/learnercourses" element={<LearnerCourses />} />
 
               <Route
                 path="/dashboard"
@@ -84,7 +85,6 @@ const App = () => (
                 }
               />
               <Route path="/welcome" element={<WelcomePage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

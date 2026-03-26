@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 const mainLinks = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/courses", icon: BookOpen, label: "My Courses" },
+  { to: "/learnercourses", icon: BookOpen, label: "My Courses" },
   { to: "/skills", icon: TrendingUp, label: "Skills" },
   { to: "/achievements", icon: Trophy, label: "Achievements" },
   { to: "/schedule", icon: Calendar, label: "Schedule" },
@@ -42,7 +42,7 @@ export const Sidebar = () => {
               <p className="text-sm opacity-90">Current Streak</p>
               {/* ✅ Remplace "12 Days" par la vraie valeur */}
               <p className="text-2xl font-bold">
-                {loading ? "..." : `${currentStreak} Days`}
+                {loading ? "..." : `${currentStreak} ${currentStreak <= 1 ? "Day" : "Days"}`}
               </p>
             </div>
           </div>
