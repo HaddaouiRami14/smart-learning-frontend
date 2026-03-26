@@ -13,7 +13,19 @@ interface CreateCourseDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const categories = ["Programming","Design","Business","Marketing","Data Science","Language","Music","Photography","Other"];
+//const categories = ["Programming","Design","Business","Marketing","Data Science","Language","Music","Photography","Other"];
+const categories = [
+  { value: "Programming", label: "Programming" },
+  { value: "Design", label: "Design" },
+  { value: "Business", label: "Business" },
+  { value: "Marketing", label: "Marketing" },
+  { value: "DataScience", label: "Data Science" },
+  { value: "Language", label: "Language" },
+  { value: "Music", label: "Music" },
+  { value: "Photography", label: "Photography" },
+  { value: "Other", label: "Other" },
+
+]
 const levels = [
   { value: "BEGINNER", label: "Beginner" },
   { value: "INTERMEDIATE", label: "Intermediate" },
@@ -36,7 +48,6 @@ export const CreateCourseDialog = ({
 
   const { createCourse } = useCourses();
 
-  // ✅ Valider les données avant d'envoyer
   const isFormValid = () => {
     return (
       title.trim() !== "" &&
@@ -67,7 +78,6 @@ export const CreateCourseDialog = ({
         imageUrl: imageUrl.trim() || undefined,
       });
 
-      // ✅ Stocker l'ID du cours créé
       if (response?.id) {
         setCreatedCourseId(response.id);
       }
@@ -85,7 +95,7 @@ export const CreateCourseDialog = ({
     }
   };
 
-  // ✅ Naviguer vers ChapterEditor
+  //  Naviguer vers ChapterEditor
   const handleCreateChapter = () => {
     if (createdCourseId) {
       onOpenChange(false);
@@ -95,14 +105,14 @@ export const CreateCourseDialog = ({
     }
   };
 
-  // ✅ Retour aux cours
+  // Retour aux cours
   const handleBackToCourses = () => {
     onOpenChange(false);
     navigate("/courses");
     setCreatedCourseId(null);
   };
 
-  // ✅ Réinitialiser le formulaire quand la dialog se ferme
+  //  Réinitialiser le formulaire quand la dialog se ferme
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setTitle("");
@@ -159,10 +169,8 @@ export const CreateCourseDialog = ({
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

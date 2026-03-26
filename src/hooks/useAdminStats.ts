@@ -33,9 +33,8 @@ export const useAdminStats = () => {
       try {
         const token = localStorage.getItem("token");
 
-        // Hybrid fetch: works for both Local JWT and Google OAuth2 session
         const requestOptions: RequestInit = {
-          credentials: "include", // important for Google OAuth
+          credentials: "include", 
           headers: {
             "Content-Type": "application/json",
           },
@@ -77,8 +76,8 @@ export const useAdminStats = () => {
           totalLearners,
           totalCourses,
           publishedCourses,
-          totalEnrollments: 0, // replace if you have enrollments API
-          completedEnrollments: 0, // replace if you have completed enrollments API
+          totalEnrollments: 0, 
+          completedEnrollments: 0, 
         });
       } catch (error) {
         console.error("Failed to fetch admin stats:", error);

@@ -49,9 +49,7 @@ const mapDTOToFrontend = (dto: CourseDTO): CourseWithTrainer => ({
   updatedAt: dto.updatedAt,
 });
 
-/**
- * Mapper CourseWithFormateur (frontend) vers CourseDTO (backend Java)
- */
+
 const mapFrontendToDTO = (course: CourseWithTrainer): Partial<CourseDTO> => ({
   title: course.title,
   description: course.description || "",
@@ -67,9 +65,7 @@ export const useAllCourses = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Récupère tous les cours depuis le backend
-   */
+  
   const fetchCourses = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -108,9 +104,7 @@ export const useAllCourses = () => {
     }
   }, []);
 
-  /**
-   * Bascule l'état actif/inactif d'un cours
-   */
+  
   const togglePublish = useCallback(
     async ({
       courseId,
@@ -125,7 +119,7 @@ export const useAllCourses = () => {
 
          const headers = getAuthHeaders();
           console.log("Endpoint:", endpoint);
-          console.log("Headers:", headers); // Debug what's being sent
+          console.log("Headers:", headers); 
 
       try {
         const response = await fetch(endpoint, {
@@ -133,11 +127,11 @@ export const useAllCourses = () => {
           headers,
         });
 
-        console.log("Response status:", response.status); // Log status code
+        console.log("Response status:", response.status); 
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          console.log("Error response:", errorData); // Log server error details
+          console.log("Error response:", errorData); 
           throw new Error(
             errorData.message || "Failed to update course status"
           );
@@ -146,7 +140,6 @@ export const useAllCourses = () => {
         const updatedDTO: CourseDTO = await response.json();
         const updatedCourse = mapDTOToFrontend(updatedDTO);
 
-        // Mettre à jour l'état local
         setCourses((prev) =>
           prev.map((c) => (c.id === courseId ? updatedCourse : c))
         );
@@ -169,9 +162,7 @@ export const useAllCourses = () => {
     []
   );
 
-  /**
-   * Supprime un cours
-   */
+  
   const deleteCourse = useCallback(async (courseId: string) => {
     try {
       const response = await fetch(`${API_BASE}/${courseId}`, {
@@ -184,7 +175,6 @@ export const useAllCourses = () => {
         throw new Error(errorData.message || "Failed to delete course");
       }
 
-      // Mettre à jour l'état local
       setCourses((prev) => prev.filter((c) => c.id !== courseId));
 
       toast({
@@ -203,14 +193,11 @@ export const useAllCourses = () => {
     }
   }, []);
 
-  /**
-   * Rafraîchit la liste des cours
-   */
+  
   const refetch = useCallback(() => {
     fetchCourses();
   }, [fetchCourses]);
 
-  // Récupérer les cours au montage du composant
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);

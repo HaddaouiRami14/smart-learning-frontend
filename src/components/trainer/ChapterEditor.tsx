@@ -356,7 +356,7 @@ const ChapterEditor = () => {
             { id: `${Date.now()}-2`, optionText: '', isCorrect: false, orderIndex: 2 },
             { id: `${Date.now()}-3`, optionText: '', isCorrect: false, orderIndex: 3 }
           ]
-        : [] // No options for SHORT_ANSWER and EDITOR_ANSWER
+        : [] 
     };
     
     setQuiz({ ...quiz, questions: [...quiz.questions, newQuestion] });
@@ -418,10 +418,9 @@ const deleteQuestion = (questionId: string) => {
 };
 
 const saveQuiz = async (savedChapterId: string) => {
-  // ✅ Correction : ne bloquer que si hasQuiz est false
-  // Si hasQuiz est true mais questions vides → envoyer PUT quand même pour vider en base
+  
   if (!hasQuiz) return;
-  if (!loadedQuizId && quiz.questions.length === 0) return; // Nouveau quiz vide → rien à créer
+  if (!loadedQuizId && quiz.questions.length === 0) return; 
   
   try {
     const quizData = {
@@ -456,7 +455,6 @@ const saveQuiz = async (savedChapterId: string) => {
     };
 
     if (loadedQuizId) {
-      // ✅ Toujours envoyer le PUT même si questions = [] pour que le backend vide la liste
       await axios.put(
         `${API_BASE}/${courseId}/chapters/${savedChapterId}/quiz/${loadedQuizId}`,
         quizData,
@@ -476,7 +474,6 @@ const saveQuiz = async (savedChapterId: string) => {
   }
 };
 
-  // Exercise functions
   const addTestCase = () => {
     const newTestCase: ExerciseTestCase = {
       id: Date.now().toString(),
@@ -661,24 +658,22 @@ const saveQuiz = async (savedChapterId: string) => {
     }
 
     if (finalChapterId) {
-      // ✅ Si le quiz a été désactivé ET qu'il existait en base → le supprimer
      if (!hasQuiz && loadedQuizId) {
       console.log('🗑️ Deleting quiz:', loadedQuizId);
         await axios.delete(
           `${API_BASE}/${courseId}/chapters/${finalChapterId}/quiz/${loadedQuizId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setLoadedQuizId(null); // ✅ Reset l'ID local
+        setLoadedQuizId(null); 
         setQuiz({ title: '', description: '', passingScore: 70, questions: [] });
       }
 
-      // ✅ Si le quiz a été désactivé ET qu'il existait en base → le supprimer
       if (!hasExercise && loadedExerciseId) {
         await axios.delete(
           `${API_BASE}/${courseId}/chapters/${finalChapterId}/exercises/${loadedExerciseId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setLoadedExerciseId(null); // ✅ Reset l'ID local
+        setLoadedExerciseId(null); 
       }
 
       const pendingResources = blocks.filter(b => b.type === 'pending-resource');

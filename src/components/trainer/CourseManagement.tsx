@@ -200,48 +200,48 @@ export const CourseManagement = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-  <DropdownMenuItem onClick={() => handleEdit(course)}>
-    <Edit className="h-4 w-4 mr-2" />
-    Edit Course
-  </DropdownMenuItem>
-  <DropdownMenuItem
-    onClick={() =>
-      handleToggleActive(course.id, course.isActive)
-    }
-  >
-    {course.isActive ? (
-      <>
-        <EyeOff className="h-4 w-4 mr-2" />
-        Unpublish
-      </>
-    ) : (
-      <>
-        <Eye className="h-4 w-4 mr-2" />
-        Publish
-      </>
-    )}
-  </DropdownMenuItem>
-  <DropdownMenuItem
-    onClick={() => navigate(`/courses/${course.id}`)}
-  >
-    <Edit className="h-4 w-4 mr-2" />
-    Manage Chapters
-  </DropdownMenuItem>
-  <DropdownMenuItem
-    onClick={() => navigate(`/courses/${course.id}/preview`)}
-  >
-    <Eye className="h-4 w-4 mr-2" />
-    Preview as Learner
-  </DropdownMenuItem>
-  <DropdownMenuSeparator />
-  <DropdownMenuItem
-    className="text-destructive"
-    onClick={() => handleDelete(course.id)}
-  >
-    <Trash2 className="h-4 w-4 mr-2" />
-    Delete
-  </DropdownMenuItem>
-</DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleEdit(course)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Course
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                handleToggleActive(course.id, course.isActive)
+              }
+            >
+              {course.isActive ? (
+                <>
+                  <EyeOff className="h-4 w-4 mr-2" />
+                  Unpublish
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Publish
+                </>
+              )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate(`/courses/${course.id}`)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Manage Chapters
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate(`/courses/${course.id}/preview`)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Preview as Learner
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() => handleDelete(course.id)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </CardHeader>

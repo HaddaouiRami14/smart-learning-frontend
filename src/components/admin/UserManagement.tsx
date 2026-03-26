@@ -34,7 +34,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Shield, GraduationCap, BookOpen, Ban, Clock, ShieldCheck } from "lucide-react";
 
-// ✅ Options de durée de ban
+//  Options de durée de ban
 const BAN_DURATIONS = [
   { label: "1 day", value: 1 },
   { label: "3 days", value: 3 },
@@ -48,7 +48,7 @@ export const UserManagement = () => {
   const { users, isLoading, banUser, unbanUser } = useAllUsers();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
-  // ✅ Durée sélectionnée par user (keyed by user_id)
+  //  Durée sélectionnée par user (keyed by user_id)
   const [selectedDurations, setSelectedDurations] = useState<Record<string, number | undefined>>({});
 
   const filteredUsers = users.filter((user) => {
@@ -82,7 +82,7 @@ export const UserManagement = () => {
     }
   };
 
-  // ✅ Badge de statut avec date d'expiration si ban temporaire
+  //  Badge de statut avec date d'expiration si ban temporaire
   const getBanBadge = (isBanned: boolean, banExpiresAt: string | null) => {
     if (!isBanned) {
       return (

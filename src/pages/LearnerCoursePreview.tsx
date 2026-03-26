@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback ,useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Editor from '@monaco-editor/react';
@@ -41,7 +41,6 @@ interface Exercise { id: number; title: string; description: string; language: '
 interface ExerciseResult { exerciseId: number; testsPassed: number; totalTests: number; score: number; passed: boolean; executionTime: number; testResults: { testNumber: number; passed: boolean; input: string | null; expectedOutput: string | null; actualOutput: string | null; isHidden: boolean; status: string; errorMessage: string | null; }[]; }
 interface Enrollment { id: number; courseId: number; progression: number; dateInscription: string; }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 const levelConfig: Record<string, { label: string; color: string }> = {
   BEGINNER:     { label: "Beginner",     color: "bg-green-500/20 text-green-300 border-green-500/30" },
   INTERMEDIATE: { label: "Intermediate", color: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30" },
@@ -58,27 +57,23 @@ const getAuthHeaders = () => ({
   'Content-Type': 'application/json',
 });
 
-// ─── Component ────────────────────────────────────────────────────────────────
 const LearnerCoursePreview = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const userId = getUserId();
   const { theme } = useTheme();
 
-  // Core state
   const [course, setCourse] = useState<Course | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Enrollment & progress state
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [unlockedChapters, setUnlockedChapters] = useState<Set<number>>(new Set());
   const [chapterQuizPassed, setChapterQuizPassed] = useState<{ [chapterId: number]: boolean }>({});
   const [chapterExercisePassed, setChapterExercisePassed] = useState<{ [chapterId: number]: boolean }>({});
 
-  // Quiz state
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<{ [key: number]: number }>({});           // TRUE_FALSE
   const [quizMultiAnswers, setQuizMultiAnswers] = useState<{ [key: number]: number[] }>({}); // MULTIPLE_CHOICE
@@ -87,21 +82,24 @@ const LearnerCoursePreview = () => {
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
-  // Exercise state
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [exerciseCode, setExerciseCode] = useState('');
   const [exerciseResult, setExerciseResult] = useState<ExerciseResult | null>(null);
   const [runningCode, setRunningCode] = useState(false);
   const [showHints, setShowHints] = useState(false);
 
-  // Resources state
   const [resources, setResources] = useState<Resource[]>([]);
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
 
-  // ─── Progress helpers ──────────────────────────────────────────────────────
+  const isEnrollingRef = useRef(false);
+
+const notifyProgressUpdated = () => {
+    window.dispatchEvent(new CustomEvent('progressUpdated'));
+};
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const applyProgressDetail = useCallback((detail: any, sortedChapters: Chapter[]) => {
     const quizPassed: { [id: number]: boolean } = {};
@@ -128,13 +126,40 @@ const LearnerCoursePreview = () => {
     if (lastUnlocked) setSelectedChapter(lastUnlocked);
   }, []);
 
-  const enrollUser = async (): Promise<Enrollment | null> => {
-    if (!userId || !courseId) return null;
-    try {
-      const res = await axios.post(`${ENROLLMENT_API}/${userId}/enroll/${courseId}`, {}, { headers: getAuthHeaders() });
-      return res.data;
-    } catch { return null; }
-  };
+ 
+    const enrollUser = async (): Promise<Enrollment | null> => {
+      if (!userId || !courseId) return null;
+      try {
+        const check = await axios.get(
+          `${ENROLLMENT_API}/${userId}/course/${courseId}`,
+          { headers: getAuthHeaders() }
+        );
+        return check.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (checkErr: any) {
+        if (checkErr.response?.status === 404) {
+          try {
+            const res = await axios.post(
+              `${ENROLLMENT_API}/${userId}/enroll/${courseId}`,
+              {},
+              { headers: getAuthHeaders() }
+            );
+            return res.data;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } catch (enrollErr: any) {
+            if (enrollErr.response?.status === 409 || enrollErr.response?.status === 500) {
+              const retry = await axios.get(
+                `${ENROLLMENT_API}/${userId}/course/${courseId}`,
+                { headers: getAuthHeaders() }
+              );
+              return retry.data;
+            }
+            return null;
+          }
+        }
+        return null;
+      }
+    };
 
   const loadEnrollment = useCallback(async (sortedChapters: Chapter[]) => {
     if (!userId || !courseId) return;
@@ -148,14 +173,37 @@ const LearnerCoursePreview = () => {
         setUnlockedChapters(new Set([sortedChapters[0].id]));
         setSelectedChapter(sortedChapters[0]);
       }
-    } catch {
-      const newEnrollment = await enrollUser();
-      if (newEnrollment) setEnrollment(newEnrollment);
-      if (sortedChapters.length > 0) {
-        setUnlockedChapters(new Set([sortedChapters[0].id]));
-        setSelectedChapter(sortedChapters[0]);
-      }
+    } 
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   catch (err: any) {
+    
+      if (err.response?.status === 404) {
+        
+        if (isEnrollingRef.current) {
+          console.log("Inscription déjà en cours, on ignore.");
+          return;
+        }
+        
+        isEnrollingRef.current = true;
+
+        try {
+          const newEnrollment = await enrollUser();
+          if (newEnrollment) setEnrollment(newEnrollment);
+          if (sortedChapters.length > 0) {
+            setUnlockedChapters(new Set([sortedChapters[0].id]));
+            setSelectedChapter(sortedChapters[0]);
+          }
+        } finally {
+          isEnrollingRef.current = false;
+        }
+    } else {
+        console.error('Failed to load enrollment:', err);
+        if (sortedChapters.length > 0) {
+            setUnlockedChapters(new Set([sortedChapters[0].id]));
+            setSelectedChapter(sortedChapters[0]);
+        }
     }
+    } 
   }, [userId, courseId, applyProgressDetail]);
 
   const markCompletedAndUnlock = useCallback(async (chapterId: number, itemType: 'Q' | 'E') => {
@@ -170,7 +218,6 @@ const LearnerCoursePreview = () => {
     } catch (err) { console.error('Failed to mark item completed:', err); }
   }, [userId, courseId, chapters, applyProgressDetail]);
 
-  // ─── Data loading ──────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
@@ -223,7 +270,6 @@ const LearnerCoursePreview = () => {
     } catch { setExercise(null); setExerciseCode(''); }
   };
 
-  // ─── Resource preview ──────────────────────────────────────────────────────
   const handlePreviewResource = async (resource: Resource) => {
     try {
       setLoadingPreview(true);
@@ -266,7 +312,6 @@ const LearnerCoursePreview = () => {
     } catch { setError('Erreur lors du téléchargement'); }
   };
 
-  // ─── Quiz handlers ─────────────────────────────────────────────────────────
   const handleTrueFalseAnswer = (questionId: number, optionId: number) =>
     setQuizAnswers(prev => ({ ...prev, [questionId]: optionId }));
 
@@ -298,7 +343,14 @@ const LearnerCoursePreview = () => {
         { headers: getAuthHeaders() }
       );
       setQuizResult(response.data);
-      if (response.data.passed) await markCompletedAndUnlock(selectedChapter.id, 'Q');
+      if (response.data.passed) {
+    const detailRes = await axios.get(
+        `${ENROLLMENT_API}/${userId}/progress/${courseId}`,
+        { headers: getAuthHeaders() }
+    );
+    applyProgressDetail(detailRes.data, chapters);
+    notifyProgressUpdated(); 
+}
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) { setError(err.response?.data?.message || 'Error submitting quiz'); }
@@ -311,7 +363,6 @@ const LearnerCoursePreview = () => {
     window.scrollTo({ top: document.getElementById('quiz-section')?.offsetTop || 0, behavior: 'smooth' });
   };
 
-  // ─── Exercise handler ──────────────────────────────────────────────────────
   const runExercise = async () => {
     if (!exercise || !selectedChapter) return;
     try {
@@ -322,14 +373,20 @@ const LearnerCoursePreview = () => {
         { headers: getAuthHeaders() }
       );
       setExerciseResult(response.data);
-      if (response.data.passed) await markCompletedAndUnlock(selectedChapter.id, 'E');
+      if (response.data.passed) {
+    const detailRes = await axios.get(
+        `${ENROLLMENT_API}/${userId}/progress/${courseId}`,
+        { headers: getAuthHeaders() }
+    );
+    applyProgressDetail(detailRes.data, chapters);
+    notifyProgressUpdated(); 
+}
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) { setError(err.response?.data?.message || 'Error running code'); }
     finally { setRunningCode(false); }
   };
 
-  // ─── Utilities ─────────────────────────────────────────────────────────────
   const getLanguageForMonaco = (lang: string) =>
     ({ 'PYTHON': 'python', 'JAVASCRIPT': 'javascript', 'JAVA': 'java' }[lang] || 'python');
 
@@ -366,13 +423,11 @@ const LearnerCoursePreview = () => {
     'EDITOR_ANSWER':   'bg-teal-100 text-teal-700',
   }[type] || 'bg-slate-100 text-slate-700');
 
-  // ─── Derived values ────────────────────────────────────────────────────────
   const progressPercent = enrollment?.progression ?? 0;
   const currentChapterQuizPassed = selectedChapter ? (chapterQuizPassed[selectedChapter.id] || false) : false;
   const currentChapterExercisePassed = selectedChapter ? (chapterExercisePassed[selectedChapter.id] || false) : false;
   const levelInfo = course?.level ? levelConfig[course.level] : null;
 
-  // ─── Guards ────────────────────────────────────────────────────────────────
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -390,7 +445,6 @@ const LearnerCoursePreview = () => {
     </div>
   );
 
-  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background">
 

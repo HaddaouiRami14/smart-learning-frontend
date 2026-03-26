@@ -47,6 +47,7 @@ export const CourseFiltersComponent = ({
     "All Categories",
     "Programming",
     "Design",
+    "DataScience",
     "Business",
     "Marketing",
     "Photography",

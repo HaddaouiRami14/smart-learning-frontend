@@ -99,7 +99,6 @@ export const useCourses = () => {
               price: courseData.price,
                level: courseData.level || "BEGINNER",
               imageUrl: courseData.imageUrl || null,
-              // formateurId, formateurName, isActive, createdAt, updatedAt sont générés côté serveur
             }),
           });
 

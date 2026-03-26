@@ -41,12 +41,11 @@ export const Header = ({ searchQuery = "", onSearchChange }: HeaderProps) => {
     return user?.email?.slice(0, 2).toUpperCase() || "U";
   };
 
-  // **New function: navigate to correct profile based on role**
   const goToProfile = () => {
     if (role === "FORMATEUR") {
       navigate("/trainer/profile");
     } else {
-      navigate("/profile"); // learner or default
+      navigate("/profile"); 
     }
   };
 

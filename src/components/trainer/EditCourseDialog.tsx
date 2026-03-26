@@ -15,16 +15,17 @@ interface EditCourseDialogProps {
 }
 
 const categories = [
-  "Programming",
-  "Design",
-  "Business",
-  "Marketing",
-  "Data Science",
-  "Language",
-  "Music",
-  "Photography",
-  "Other",
-];
+  { value: "Programming", label: "Programming" },
+  { value: "Design", label: "Design" },
+  { value: "Business", label: "Business" },
+  { value: "Marketing", label: "Marketing" },
+  { value: "DataScience", label: "Data Science" },
+  { value: "Language", label: "Language" },
+  { value: "Music", label: "Music" },
+  { value: "Photography", label: "Photography" },
+  { value: "Other", label: "Other" },
+
+]
 const levels = [
   { value: "BEGINNER", label: "Beginner" },
   { value: "INTERMEDIATE", label: "Intermediate" },
@@ -198,10 +199,8 @@ export const EditCourseDialog = ({
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
