@@ -13,7 +13,6 @@ interface CreateCourseDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-//const categories = ["Programming","Design","Business","Marketing","Data Science","Language","Music","Photography","Other"];
 const categories = [
   { value: "Programming", label: "Programming" },
   { value: "Design", label: "Design" },
@@ -24,8 +23,8 @@ const categories = [
   { value: "Music", label: "Music" },
   { value: "Photography", label: "Photography" },
   { value: "Other", label: "Other" },
+];
 
-]
 const levels = [
   { value: "BEGINNER", label: "Beginner" },
   { value: "INTERMEDIATE", label: "Intermediate" },
@@ -48,23 +47,26 @@ export const CreateCourseDialog = ({
 
   const { createCourse } = useCourses();
 
+  // ✅ CHANGED: price is optional — empty or 0 means free
   const isFormValid = () => {
     return (
       title.trim() !== "" &&
       category !== "" &&
-      level !== "" &&
-      price !== "" &&
-      !isNaN(parseFloat(price)) &&
-      parseFloat(price) > 0
+      level !== ""
     );
+  };
+
+  // ✅ CHANGED: if price is empty or 0, treat as free (0)
+  const parsedPrice = () => {
+    if (price === "" || price === null) return 0;
+    const val = parseFloat(price);
+    return isNaN(val) || val < 0 ? 0 : val;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isFormValid()) {
-      return;
-    }
+    if (!isFormValid()) return;
 
     setIsSubmitting(true);
 
@@ -73,7 +75,7 @@ export const CreateCourseDialog = ({
         title: title.trim(),
         description: description.trim() || undefined,
         category,
-        price: parseFloat(price),
+        price: parsedPrice(), // ✅ 0 if empty or zero
         level,
         imageUrl: imageUrl.trim() || undefined,
       });
@@ -82,7 +84,6 @@ export const CreateCourseDialog = ({
         setCreatedCourseId(response.id);
       }
 
-      // ✅ Réinitialiser le formulaire après succès
       setTitle("");
       setDescription("");
       setCategory("");
@@ -95,31 +96,27 @@ export const CreateCourseDialog = ({
     }
   };
 
-  //  Naviguer vers ChapterEditor
   const handleCreateChapter = () => {
     if (createdCourseId) {
       onOpenChange(false);
       navigate(`/courses/${createdCourseId}/chapters/new`);
-      // Réinitialiser
       setCreatedCourseId(null);
     }
   };
 
-  // Retour aux cours
   const handleBackToCourses = () => {
     onOpenChange(false);
     navigate("/courses");
     setCreatedCourseId(null);
   };
 
-  //  Réinitialiser le formulaire quand la dialog se ferme
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setTitle("");
       setDescription("");
       setCategory("");
       setPrice("");
-      setLevel("BEGINNER"); 
+      setLevel("BEGINNER");
       setImageUrl("");
       setCreatedCourseId(null);
     }
@@ -131,7 +128,6 @@ export const CreateCourseDialog = ({
       <DialogContent className="sm:max-w-sm max-h-[90vh] overflow-y-auto">
         {!createdCourseId ? (
           <>
-            {/* ÉTAPE 1: Formulaire de création du cours */}
             <DialogHeader>
               <DialogTitle>Create New Course</DialogTitle>
               <DialogDescription>
@@ -176,7 +172,6 @@ export const CreateCourseDialog = ({
                 </Select>
               </div>
 
-                 {/* Level */}
               <div className="space-y-2">
                 <Label htmlFor="level">Level</Label>
                 <Select value={level} onValueChange={setLevel}>
@@ -191,21 +186,22 @@ export const CreateCourseDialog = ({
                 </Select>
               </div>
 
+              {/* ✅ CHANGED: price is optional, placeholder shows it's free if empty */}
               <div className="space-y-2">
-                <Label htmlFor="price">Price (USD) *</Label>
+                <Label htmlFor="price">Price (USD)</Label>
                 <Input
                   id="price"
                   type="number"
-                  placeholder="e.g., 49.99"
+                  placeholder="Leave empty or 0 for free"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   step="0.01"
                   min="0"
-                  required
                   disabled={isSubmitting}
                 />
-                {price && parseFloat(price) <= 0 && (
-                  <p className="text-xs text-red-500">Price must be greater than 0</p>
+                {/* ✅ Show free badge when empty or 0 */}
+                {(price === "" || parseFloat(price) === 0) && (
+                  <p className="text-xs text-green-600 font-medium">✅ This course will be free</p>
                 )}
               </div>
 
@@ -229,17 +225,8 @@ export const CreateCourseDialog = ({
                 />
                 {imageUrl && (
                   <div className="mt-2">
-                    <img
-                      src={imageUrl}
-                      alt="Preview"
-                      className="w-full h-32 object-cover rounded-md"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setImageUrl("")}
-                    >
+                    <img src={imageUrl} alt="Preview" className="w-full h-32 object-cover rounded-md" />
+                    <Button type="button" variant="destructive" size="sm" onClick={() => setImageUrl("")}>
                       Remove Image
                     </Button>
                   </div>
@@ -247,17 +234,10 @@ export const CreateCourseDialog = ({
               </div>
 
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleOpenChange(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !isFormValid()}
-                >
+                <Button type="submit" disabled={isSubmitting || !isFormValid()}>
                   {isSubmitting ? "Creating..." : "Create Course"}
                 </Button>
               </DialogFooter>
@@ -265,7 +245,6 @@ export const CreateCourseDialog = ({
           </>
         ) : (
           <>
-            {/* ÉTAPE 2: Après création du cours */}
             <DialogHeader>
               <DialogTitle>✅ Course Created Successfully!</DialogTitle>
               <DialogDescription>
@@ -285,18 +264,10 @@ export const CreateCourseDialog = ({
             </div>
 
             <DialogFooter className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                 Back to Courses
               </Button>
-              <Button
-                type="button"
-                onClick={handleCreateChapter}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
+              <Button type="button" onClick={handleCreateChapter} className="bg-blue-600 hover:bg-blue-700">
                 ✏️ Create First Chapter
               </Button>
             </DialogFooter>

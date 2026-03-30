@@ -32,19 +32,27 @@ export const CourseCard = ({
   const navigate = useNavigate();
   const levelInfo = level ? levelConfig[level] : null;
 
+  const handleClick = () => {
+    // Already enrolled (has progress) → go to learning page
+    // Not enrolled → go to detail/payment page first ✅
+    if (progress !== undefined) {
+      navigate(`/courses/${id}/learnerpreview`);
+    } else {
+      navigate(`/courses/${id}/enroll`);
+    }
+  };
+
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <div className="relative aspect-video overflow-hidden">
         <img src={image} alt={title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
 
-        {/* Category + New badges */}
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
           <Badge variant="secondary" className="bg-secondary text-secondary-foreground">{category}</Badge>
           {isNew && <Badge className="bg-warning text-warning-foreground animate-pulse-glow">New</Badge>}
         </div>
 
-        {/* Price badge — top right */}
         {price !== undefined && (
           <div className="absolute top-3 right-3">
             {price === 0 ? (
@@ -62,7 +70,6 @@ export const CourseCard = ({
 
       <div className="p-5 space-y-4">
         <div className="space-y-2">
-          {/* Title + Level badge on same row */}
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-lg text-foreground line-clamp-1 group-hover:text-primary transition-colors">
               {title}
@@ -95,10 +102,10 @@ export const CourseCard = ({
         )}
 
         <Button
-          onClick={() => navigate(`/courses/${id}/learnerpreview`)}
+          onClick={handleClick}
           className={cn("w-full", progress !== undefined ? "bg-gradient-primary hover:opacity-90" : "bg-gradient-accent hover:opacity-90")}
         >
-          {progress !== undefined ? "Continue Learning" : "Start Course"}
+          {progress !== undefined ? "Continue Learning" : "View Course"}
         </Button>
       </div>
     </div>
