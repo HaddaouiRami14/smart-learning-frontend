@@ -17,6 +17,7 @@ interface CourseCardProps {
   level?: string;
   progress?: number;
   isNew?: boolean;
+  isRecommended?: boolean;   // ← nouvelle prop
 }
 
 const levelConfig: Record<string, { label: string; className: string }> = {
@@ -27,7 +28,7 @@ const levelConfig: Record<string, { label: string; className: string }> = {
 
 export const CourseCard = ({
   id, title, description, image, duration, students, rating,
-  category, price, level, progress, isNew,
+  category, price, level, progress, isNew,isRecommended = false
 }: CourseCardProps) => {
   const navigate = useNavigate();
   const levelInfo = level ? levelConfig[level] : null;
@@ -45,6 +46,23 @@ export const CourseCard = ({
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <div className="relative aspect-video overflow-hidden">
+        {/* ── Badge "Recommandé" ── */}
+            {isRecommended && (
+              <div className="absolute top-3 left-3 z-10
+                              flex items-center gap-1.5
+                              bg-gradient-to-r from-violet-600 to-indigo-500
+                              text-white text-xs font-semibold
+                              px-2.5 py-1 rounded-full shadow-md">
+                {/* étoile SVG inline — pas d'emoji */}
+                <svg width="12" height="12" viewBox="0 0 24 24"
+                    fill="currentColor" className="shrink-0">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87
+                          1.18 6.88L12 17.77l-6.18 3.25
+                          1.18-6.88-5-4.87 6.91-1.01L12 2z"/>
+                </svg>
+                Recommandé
+              </div>
+            )}
         <img src={image} alt={title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
 

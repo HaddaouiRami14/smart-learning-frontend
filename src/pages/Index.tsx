@@ -17,7 +17,8 @@ import { useSkillsProgress }                   from "@/hooks/useSkillsProgress";
 import { CATEGORY_CONFIG, getFallbackConfig }  from "@/hooks/skillCategoryConfig";
 import { Skeleton }                            from "@/components/ui/skeleton";
 import { useRecentActivities } from "@/hooks/useRecentActivities";
-
+import ChatBot from "./ChatBot";
+import { useRecommendedCourseIds } from "@/hooks/useRecommendedCourseIds";
 
 
 interface Enrollment {
@@ -28,6 +29,7 @@ interface Enrollment {
 }
 
 const Index = () => {
+
   const { role } = useAuth();
   const navigate = useNavigate();
   const { data: courses, isLoading: coursesLoading } = usePublicCourses();
@@ -37,12 +39,13 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { activities, isLoading: activitiesLoading } = useRecentActivities();
   const [showAllActivities, setShowAllActivities] = useState(false);
+  
 
   // ✅ nouveaux états
   const [filters, setFilters] = useState<LearnerCourseFilters>({});
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [enrollmentsLoading, setEnrollmentsLoading] = useState(true);
-
+  
   const { skills, overallProgress, isLoading, error, refetch } = useSkillsProgress();
   const mappedSkills = skills.map((skill) => {
   const config = CATEGORY_CONFIG[skill.category] ?? getFallbackConfig();
@@ -66,6 +69,7 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
     return payload.username || payload.sub;
   };
   const username = getUsername();
+  
 
   const filteredCourses = (courses ?? [])
     .filter(c => c.isActive)
@@ -84,6 +88,8 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
       return JSON.parse(stored).id ?? null;
     } catch { return null; }
   };
+  const { recommendedIds } = useRecommendedCourseIds(getUserId());
+
 
   useEffect(() => {
     const fetchEnrollments = async () => {
@@ -178,13 +184,15 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-          {/* Weekly Progress Chart */}
-          <div className="xl:col-span-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+        {/* Row 1 : WeeklyProgress seul */}
+          <div className="mb-8 animate-fade-in" style={{ animationDelay: "0.5s" }}>
             <WeeklyProgress />
           </div>
 
-          {/* Recent Activity */}
+          {/* Row 2 : RecentActivity + ChatBot côte à côte */}
+          <div className="grid grid-cols-[3fr_2fr] gap-8 mb-8 items-stretch">
+            
+            {/* Recent Activity (gauche) */}
             <div className="animate-fade-in" style={{ animationDelay: "0.6s" }}>
               <div className="rounded-xl border border-border bg-card p-6 h-full">
                 <div className="flex items-center justify-between mb-4">
@@ -231,7 +239,17 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
                 </div>
               </div>
             </div>
-        </div>
+
+            {/* ChatBot (droite) */}
+            <div className="animate-fade-in" style={{ animationDelay: "0.55s" }}>
+                <div className="h-full overflow-hidden">
+                  <ChatBot apprenantId={getUserId() ?? 0} />
+                </div>
+                          
+            </div>
+
+          </div>
+        
 
         {/* Skills Section */}
         <div className="mb-8">
@@ -346,6 +364,7 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
                     price={course.price}           // ✅ nouveau
                     level={course.level}           // ✅ nouveau
                     progress={getCourseProgress(course.id)} // ✅ nouveau
+                    isRecommended={[...recommendedIds].map(String).includes(String(course.id))}
                   />
                 </div>
               ))
