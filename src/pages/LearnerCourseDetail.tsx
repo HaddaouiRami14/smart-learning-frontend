@@ -57,6 +57,7 @@ const CheckoutForm = ({ course, onSuccess }: { course: Course; onSuccess: () => 
 
     // clientSecret is already inside the Elements context — confirmCardPayment picks it up
     const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (elements as any)._elements[0]?._frame?._stripeContext?.clientSecret ?? "",
       { payment_method: { card } }
     );
@@ -415,7 +416,7 @@ const LearnerCourseDetail = () => {
               <Zap className="w-5 h-5 text-yellow-400" /> What you'll get
             </h3>
             <div className="grid sm:grid-cols-2 gap-3">
-              {["Full lifetime access","Certificate of completion","Quizzes & exercises","Downloadable resources","Mobile-friendly content","Progress tracking"].map(item => (
+              {["Full lifetime access","Quizzes & exercises","Downloadable resources","Progress tracking"].map(item => (
                 <div key={item} className="flex items-center gap-2 text-sm text-slate-300">
                   <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" /> {item}
                 </div>

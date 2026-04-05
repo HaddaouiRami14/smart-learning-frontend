@@ -69,7 +69,7 @@ export const EditCourseDialog = ({
       level !== "" &&
       price !== "" &&
       !isNaN(parseFloat(price)) &&
-      parseFloat(price) > 0
+      parseFloat(price) >= 0
     );
   };
 
@@ -231,12 +231,9 @@ export const EditCourseDialog = ({
               onChange={(e) => setPrice(e.target.value)}
               step="0.01"
               min="0"
-              required
               disabled={isSubmitting}
             />
-            {price && parseFloat(price) <= 0 && (
-              <p className="text-xs text-red-500">Price must be greater than 0</p>
-            )}
+            
           </div>
 
           <div className="space-y-2">
