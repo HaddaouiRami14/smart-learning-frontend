@@ -27,6 +27,7 @@ import CoursePreview from "./pages/CoursePreview";
 import LearnerCoursePreview from "./pages/LearnerCoursePreview";
 import LearnerCourses from "./pages/LearnerCourses";
 import LearnerCourseDetail from "./pages/LearnerCourseDetail"; // ✅ NEW
+import Achievements from "./pages/achievements";
 
 const queryClient = new QueryClient();
 
@@ -66,7 +67,15 @@ const App = () => (
               <Route path="/learnercourses" element={<LearnerCourses />} />
 
               {/* ── Protected Routes ── */}
-              <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["APPRENANT"]}><Index /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["APPRENANT"]}><Index />  </ProtectedRoute>} />
+              <Route 
+  path="/achievements" 
+  element={
+    <ProtectedRoute allowedRoles={["APPRENANT"]}>
+      <Achievements />
+    </ProtectedRoute>
+  } 
+/>
               <Route path="/trainer" element={<ProtectedRoute allowedRoles={["FORMATEUR"]}><TrainerDashboard /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminDashboard /></ProtectedRoute>} />
 
