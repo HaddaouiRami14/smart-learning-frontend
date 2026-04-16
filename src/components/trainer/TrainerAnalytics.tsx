@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { BarChart3, TrendingUp, Users, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -13,58 +14,123 @@ import {
   Cell,
 } from "recharts";
 import { useCourses } from "@/hooks/useCourses";
-import { useStudents } from "@/hooks/useStudents";
+import { useAuth } from "@/contexts/AuthContext";
 
-const COLORS = ["hsl(224, 76%, 28%)", "hsl(168, 76%, 42%)", "hsl(38, 92%, 50%)", "hsl(199, 89%, 48%)"];
+const COLORS = [
+  "hsl(224, 76%, 28%)",
+  "hsl(168, 76%, 42%)",
+  "hsl(38, 92%, 50%)",
+  "hsl(199, 89%, 48%)",
+];
+
+interface TrainerStats {
+  totalCourses: number;
+  activeCourses: number;
+  totalEnrollments: number;
+  totalCompletions: number;
+  freeCourses: number;
+  paidCourses: number;
+  avgProgressPercent: number;
+}
 
 export const TrainerAnalytics = () => {
-  const { courses, enrollments } = useCourses();
-  const { students } = useStudents();
+  const { courses, fetchCourses, coursesLoading } = useCourses();
+  const { user } = useAuth();
 
-  // Course distribution by category
+  const [stats, setStats] = useState<TrainerStats | null>(null);
+
+  // ✅ REAL enrollment trends state
+  const [enrollmentTrends, setEnrollmentTrends] = useState<
+    { name: string; enrollments: number }[]
+  >([]);
+
+  // Fetch data
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchData = async () => {
+      await fetchCourses();
+
+      const token = localStorage.getItem("token");
+
+      try {
+        // =========================
+        // STATS FETCH
+        // =========================
+        const statsRes = await fetch(
+          "http://localhost:8080/api/formateur/courses/stats",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (statsRes.ok) {
+          const data = await statsRes.json();
+          setStats(data);
+        }
+
+        // =========================
+        // TRENDS FETCH (REAL DATA)
+        // =========================
+        const trendsRes = await fetch(
+          "http://localhost:8080/api/formateur/courses/enrollment-trends",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (trendsRes.ok) {
+          const data = await trendsRes.json();
+
+          setEnrollmentTrends(
+            data.map((item: any) => ({
+              name: item.day,
+              enrollments: item.count,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Failed to fetch trainer analytics:", err);
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
+  // ✅ Course distribution (fixed null safety)
   const categoryData = courses.reduce((acc, course) => {
-    const existing = acc.find((item) => item.name === course.category);
+    const category = course.category || "Uncategorized";
+
+    const existing = acc.find((item) => item.name === category);
+
     if (existing) {
       existing.value += 1;
     } else {
-      acc.push({ name: course.category, value: 1 });
+      acc.push({ name: category, value: 1 });
     }
+
     return acc;
   }, [] as { name: string; value: number }[]);
 
-  // Enrollment trends (simulated weekly data based on enrollments)
-  const enrollmentTrends = [
-    { name: "Mon", enrollments: Math.floor(Math.random() * 10) },
-    { name: "Tue", enrollments: Math.floor(Math.random() * 10) },
-    { name: "Wed", enrollments: Math.floor(Math.random() * 10) },
-    { name: "Thu", enrollments: Math.floor(Math.random() * 10) },
-    { name: "Fri", enrollments: Math.floor(Math.random() * 10) },
-    { name: "Sat", enrollments: Math.floor(Math.random() * 10) },
-    { name: "Sun", enrollments: Math.floor(Math.random() * 10) },
-  ];
-
-  // Course performance data
-  const coursePerformance = courses.slice(0, 5).map((course) => {
-    const courseEnrollments = enrollments.filter(
-      (e) => e.course_id === course.id
+  // Loading state
+  if (coursesLoading) {
+    return (
+      <div className="text-center p-6">Loading analytics...</div>
     );
-    const avgProgress =
-      courseEnrollments.length > 0
-        ? Math.round(
-            courseEnrollments.reduce((sum, e) => sum + e.progress_percent, 0) /
-              courseEnrollments.length
-          )
-        : 0;
-    return {
-      name: course.title.length > 20 ? course.title.slice(0, 20) + "..." : course.title,
-      students: courseEnrollments.length,
-      progress: avgProgress,
-    };
-  });
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Enrollment Trends */}
+
+      {/* =========================
+          ENROLLMENT TRENDS
+      ========================= */}
       <Card className="col-span-1 lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -76,15 +142,9 @@ export const TrainerAnalytics = () => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={enrollmentTrends}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="name" className="text-xs" />
-              <YAxis className="text-xs" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                }}
-              />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
               <Bar
                 dataKey="enrollments"
                 fill="hsl(168, 76%, 42%)"
@@ -95,7 +155,9 @@ export const TrainerAnalytics = () => {
         </CardContent>
       </Card>
 
-      {/* Course Distribution */}
+      {/* =========================
+          COURSE DISTRIBUTION
+      ========================= */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -118,18 +180,12 @@ export const TrainerAnalytics = () => {
                 >
                   {categoryData.map((_, index) => (
                     <Cell
-                      key={`cell-${index}`}
+                      key={index}
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                  }}
-                />
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -137,45 +193,75 @@ export const TrainerAnalytics = () => {
               No courses to display
             </div>
           )}
+
           <div className="flex flex-wrap gap-2 mt-4 justify-center">
             {categoryData.map((item, index) => (
               <div key={item.name} className="flex items-center gap-2 text-sm">
                 <div
                   className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  style={{
+                    backgroundColor: COLORS[index % COLORS.length],
+                  }}
                 />
-                <span className="text-muted-foreground">{item.name}</span>
+                <span className="text-muted-foreground">
+                  {item.name}
+                </span>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Course Performance */}
+      {/* =========================
+          COURSE OVERVIEW
+      ========================= */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            Course Performance
+            Course Overview
           </CardTitle>
         </CardHeader>
+
         <CardContent>
-          {coursePerformance.length > 0 ? (
+          {courses.length > 0 ? (
             <div className="space-y-4">
-              {coursePerformance.map((course) => (
-                <div key={course.name} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-foreground truncate max-w-[200px]">
-                      {course.name}
+              {courses.slice(0, 5).map((course) => (
+                <div key={course.id} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="truncate max-w-[200px]">
+                      {course.title}
                     </span>
-                    <span className="text-muted-foreground">
-                      {course.students} students • {course.progress}% avg
-                    </span>
+
+                    <div className="flex gap-2">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full ${
+                          course.isActive
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {course.isActive ? "Active" : "Inactive"}
+                      </span>
+
+                      <span className="text-xs text-muted-foreground">
+                        {course.price === 0
+                          ? "Free"
+                          : `$${course.price}`}
+                      </span>
+                    </div>
                   </div>
+
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
-                      style={{ width: `${course.progress}%` }}
+                      className={`h-full ${
+                        course.isActive
+                          ? "bg-gradient-to-r from-primary to-secondary"
+                          : "bg-muted-foreground/30"
+                      }`}
+                      style={{
+                        width: course.isActive ? "100%" : "30%",
+                      }}
                     />
                   </div>
                 </div>
@@ -189,7 +275,9 @@ export const TrainerAnalytics = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
+      {/* =========================
+          STUDENT INSIGHTS
+      ========================= */}
       <Card className="col-span-1 lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -197,41 +285,48 @@ export const TrainerAnalytics = () => {
             Student Insights
           </CardTitle>
         </CardHeader>
+
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <p className="text-3xl font-bold text-foreground">
-                {students.length}
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold">
+                {stats?.totalEnrollments ?? "—"}
               </p>
-              <p className="text-sm text-muted-foreground">Total Students</p>
+              <p className="text-sm text-muted-foreground">
+                Total Enrollments
+              </p>
             </div>
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <p className="text-3xl font-bold text-foreground">
-                {enrollments.length}
+
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold">
+                {stats?.totalCompletions ?? "—"}
               </p>
-              <p className="text-sm text-muted-foreground">Total Enrollments</p>
+              <p className="text-sm text-muted-foreground">
+                Completions
+              </p>
             </div>
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <p className="text-3xl font-bold text-foreground">
-                {enrollments.filter((e) => e.progress_percent === 100).length}
+
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold">
+                {stats?.avgProgressPercent ?? "—"}%
               </p>
-              <p className="text-sm text-muted-foreground">Completions</p>
+              <p className="text-sm text-muted-foreground">
+                Avg. Progress
+              </p>
             </div>
-            <div className="text-center p-4 rounded-lg bg-muted/50">
-              <p className="text-3xl font-bold text-foreground">
-                {enrollments.length > 0
-                  ? Math.round(
-                      enrollments.reduce((sum, e) => sum + e.progress_percent, 0) /
-                        enrollments.length
-                    )
-                  : 0}
-                %
+
+            <div className="text-center p-4 bg-muted/50 rounded-lg">
+              <p className="text-3xl font-bold">
+                {stats?.activeCourses ?? "—"}
               </p>
-              <p className="text-sm text-muted-foreground">Avg. Progress</p>
+              <p className="text-sm text-muted-foreground">
+                Active Courses
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
+
     </div>
   );
 };

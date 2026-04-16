@@ -274,7 +274,7 @@ const LearnerCoursePreview = () => {
       setSubmittingQuiz(true); setError(null);
       const response = await axios.post(
         `${API_BASE}/${courseId}/chapters/${selectedChapter.id}/quiz/${quiz.id}/submit`,
-        { answers: quizAnswers, multiAnswers: quizMultiAnswers, textAnswers: quizTextAnswers },
+        { answers: quizAnswers, multiAnswers: quizMultiAnswers, textAnswers: quizTextAnswers, apprenantId: userId },
         { headers: getAuthHeaders() }
       );
       setQuizResult(response.data);
