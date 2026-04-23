@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, TrendingUp, Users, BookOpen } from "lucide-react";
+import { BarChart3, TrendingUp, Users, BookOpen, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -7,7 +7,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { useCourses } from "@/hooks/useCourses";
 import { useAuth } from "@/contexts/AuthContext";
+import { Tooltip,TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";;
 
 const COLORS = [
   "hsl(224, 76%, 28%)",
@@ -89,6 +90,7 @@ export const TrainerAnalytics = () => {
           const data = await trendsRes.json();
 
           setEnrollmentTrends(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data.map((item: any) => ({
               name: item.day,
               enrollments: item.count,
@@ -144,7 +146,7 @@ export const TrainerAnalytics = () => {
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <RechartsTooltip />
               <Bar
                 dataKey="enrollments"
                 fill="hsl(168, 76%, 42%)"
@@ -185,7 +187,7 @@ export const TrainerAnalytics = () => {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <RechartsTooltip />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -310,9 +312,22 @@ export const TrainerAnalytics = () => {
               <p className="text-3xl font-bold">
                 {stats?.avgProgressPercent ?? "—"}%
               </p>
-              <p className="text-sm text-muted-foreground">
-                Avg. Progress
-              </p>
+              <div className="flex items-center justify-center gap-1 mt-1">
+              <p className="text-sm text-muted-foreground">Avg. Progress</p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs max-w-[200px]">
+                    <p className="font-medium mb-1">Average Progress</p>
+                    <p className="text-muted-foreground">
+                      Average progress of all your students across all your courses.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             </div>
 
             <div className="text-center p-4 bg-muted/50 rounded-lg">
@@ -322,6 +337,7 @@ export const TrainerAnalytics = () => {
               <p className="text-sm text-muted-foreground">
                 Active Courses
               </p>
+              
             </div>
           </div>
         </CardContent>

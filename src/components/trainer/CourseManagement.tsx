@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, MoreVertical, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, MoreVertical, Edit, Trash2, Eye, EyeOff, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -29,8 +29,8 @@ export const CourseManagement = ({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  
-  const { courses, coursesLoading, fetchCourses, deleteCourse, toggleActive } = useCourses();
+  const { courses, coursesLoading, fetchCourses, deleteCourse, toggleActive , inscriptionCounts } = useCourses();
+
   
   useEffect(() => {
     fetchCourses();
@@ -191,6 +191,7 @@ export const CourseManagement = ({
                       >
                         {course.isActive ? "Active" : "Inactive"}
                       </Badge>
+                      <Users className="h-4 w-4" /><span>{inscriptionCounts[course.id] ?? 0} </span>
                     </div>
                   </div>
                   <DropdownMenu>

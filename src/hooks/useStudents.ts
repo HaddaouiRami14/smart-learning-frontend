@@ -1,61 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 export interface StudentWithProgress {
   id: string;
-  learner_id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  enrolled_courses: number;
-  avg_progress: number;
-  last_active: string;
+  username: string | null;    
+  email: string | null;        
+  avatarUrl: string | null;   
+  enrolledCourses: number;     
+  avgProgress: number;         
+  lastActive: string;         
 }
 
-// Mock data
-const mockStudents: StudentWithProgress[] = [
-  {
-    id: "1",
-    learner_id: "3",
-    full_name: "Jane Learner",
-    avatar_url: null,
-    enrolled_courses: 3,
-    avg_progress: 62,
-    last_active: "2024-01-20T10:00:00Z",
-  },
-  {
-    id: "2",
-    learner_id: "4",
-    full_name: "Bob Smith",
-    avatar_url: null,
-    enrolled_courses: 2,
-    avg_progress: 45,
-    last_active: "2024-01-19T14:30:00Z",
-  },
-  {
-    id: "3",
-    learner_id: "5",
-    full_name: "Alice Johnson",
-    avatar_url: null,
-    enrolled_courses: 4,
-    avg_progress: 78,
-    last_active: "2024-01-20T09:15:00Z",
-  },
-  {
-    id: "4",
-    learner_id: "6",
-    full_name: "Charlie Brown",
-    avatar_url: null,
-    enrolled_courses: 1,
-    avg_progress: 25,
-    last_active: "2024-01-18T16:45:00Z",
-  },
-];
+
+const API_BASE = "http://localhost:8080/api/formateur/courses/students"; 
 
 export const useStudents = () => {
-  const [students] = useState<StudentWithProgress[]>(mockStudents);
-  const [isLoading] = useState(false);
+  const { user } = useAuth();
+  const [students, setStudents] = useState<StudentWithProgress[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  return {
-    students,
-    isLoading,
-  };
+  const fetchStudents = useCallback(async () => {
+    if (!user) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_BASE}`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      if (!response.ok) throw new Error(`Failed to fetch students (${response.status})`);
+
+      const data = await response.json();
+
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapped: StudentWithProgress[] = data.map((s: any) => ({
+        id:               String(s.id),
+        username:         s.username ?? "Unknown", 
+        email:            s.email ?? null,
+        avatarUrl:        s.avatarUrl ?? null,    
+        enrolledCourses:  s.enrolledCourses,      
+        avgProgress:      s.avgProgress,          
+        lastActive:       s.lastActive,           
+      }));
+
+      setStudents(mapped);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch students");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
+
+  return { students, isLoading, error, refetch: fetchStudents };
 };

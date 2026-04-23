@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {  useToast } from "@/hooks/use-toast";
 
@@ -46,6 +46,8 @@ export const useCourses = () => {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
+  const [inscriptionCounts, setInscriptionCounts] = useState<Record<string, number>>({});
+
 
   // Récupérer tous les cours du formateur
   const fetchCourses = useCallback(async () => {
@@ -83,6 +85,25 @@ export const useCourses = () => {
       setCoursesLoading(false);
     }
   }, [user]);
+
+  const fetchInscriptionCounts  = useCallback(async () => {
+        try {
+      const response = await fetch(`${API_BASE}/studentss`, { // ← URL corrigée
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) return;
+  
+      // Le backend retourne : [[courseId, count], [courseId, count], ...]
+      const data: Array<[number, number]> = await response.json();
+      const map: Record<string, number> = {};
+      data.forEach(([courseId, count]) => {       // ← déstructuration tableau
+        map[String(courseId)] = Number(count);
+      });
+      setInscriptionCounts(map);
+    } catch (err) {
+      console.error("Error fetching inscription counts:", err);
+    }
+  }, []);
 
   // Créer un nouveau cours
   const createCourse = {
@@ -278,6 +299,9 @@ export const useCourses = () => {
     ),
     isPending: false,
   };
+  useEffect(() => {
+    fetchInscriptionCounts();
+  }, [ fetchInscriptionCounts]);
 
   return {
     courses,
@@ -287,5 +311,6 @@ export const useCourses = () => {
     updateCourse,
     deleteCourse,
     toggleActive,
+    inscriptionCounts
   };
 };

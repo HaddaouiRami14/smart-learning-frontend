@@ -342,7 +342,7 @@ const LearnerCourseDetail = () => {
       <div className="relative z-10 border-b border-white/5 bg-[#0d1424]">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <button
-            onClick={() => navigate("/courses")}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium"
           >
             <ChevronLeft className="w-4 h-4" /> Back to Courses

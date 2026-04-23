@@ -19,6 +19,9 @@ import { Skeleton }                            from "@/components/ui/skeleton";
 import { useRecentActivities } from "@/hooks/useRecentActivities";
 import ChatBot from "./ChatBot";
 import { useRecommendedCourseIds } from "@/hooks/useRecommendedCourseIds";
+import { useLearningTime } from "@/hooks/useLearningTime";
+import { useAchievements } from "@/hooks/useAchievements";
+import { useEnrolledCourses } from "@/hooks/useEnrolledCourses";
 
 
 interface Enrollment {
@@ -47,6 +50,7 @@ const Index = () => {
   const [enrollmentsLoading, setEnrollmentsLoading] = useState(true);
   
   const { skills, overallProgress, isLoading, error, refetch } = useSkillsProgress();
+  const { value, trendValue, isPositive } = useLearningTime();
   const mappedSkills = skills.map((skill) => {
   const config = CATEGORY_CONFIG[skill.category] ?? getFallbackConfig();
   return {
@@ -59,6 +63,7 @@ const Index = () => {
     completedCourses: skill.completedCourses,
   };
 });
+const {inscriptionCounts } = useEnrolledCourses();
 
 const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
 
@@ -89,7 +94,7 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
     } catch { return null; }
   };
   const { recommendedIds } = useRecommendedCourseIds(getUserId());
-
+  const { stats: achStats, isLoading: achLoading } = useAchievements(getUserId());
 
   useEffect(() => {
     const fetchEnrollments = async () => {
@@ -147,10 +152,11 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
             {/* ✅ valeurs dynamiques depuis enrollments */}
-            <StatsCard
-              title="Courses In Progress"
+             <StatsCard
+              title="Courses Enrolled"
               value={enrollments.length}
-              subtitle={`${enrollments.filter(e => e.progression > 50).length} near completion`}
+              subtitle={`${enrollments.filter(e => e.progression >= 50 && e.progression < 100).length} near completion`}
+              subtitle1={`${enrollments.filter(e => e.progression === 100).length} completed`}
               icon={BookOpen}
               variant="primary"
             />
@@ -158,28 +164,27 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
           <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
             <StatsCard
               title="Skills Tracked"
-              value={12}
-              subtitle="4 skills leveled up"
+              value={mappedSkills.length}
+              subtitle={`${mappedSkills.filter(s =>  s.level === "Intermediate" || s.level === "Advanced").length} skills leveled up`}
               icon={TrendingUp}
-              trend={{ value: 15, isPositive: true }}
             />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <StatsCard
               title="Achievements"
-              value={28}
-              subtitle="3 new this week"
+              value={achLoading ? "…" : achStats?.earnedBadges ?? 0}
+              subtitle={`${achStats?.newThisWeek ?? 0} new this week`}
               icon={Trophy}
               variant="accent"
             />
           </div>
-          <div className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
+         <div className="animate-fade-in" >
             <StatsCard
-              title="Learning Time"
-              value="48h"
-              subtitle="This month"
-              icon={Clock}
-              trend={{ value: 22, isPositive: true }}
+            title="Learning Time"
+            value={value}               
+            subtitle="This week"
+            icon={Clock}
+            trend={{ value: trendValue, isPositive }}
             />
           </div>
         </div>
@@ -359,8 +364,7 @@ const displayedSkills = showAllSkills ? mappedSkills : mappedSkills.slice(0, 2);
                     image={course.imageUrl || ""}
                     category={course.category}
                     duration="Self-paced"
-                    students={0}
-                    rating={0}
+                    students={inscriptionCounts[course.id] ?? 0}
                     price={course.price}           // ✅ nouveau
                     level={course.level}           // ✅ nouveau
                     progress={getCourseProgress(course.id)} // ✅ nouveau

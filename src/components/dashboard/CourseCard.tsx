@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from 'react-router-dom';
+import { useEnrolledCourses } from "@/hooks/useEnrolledCourses";
 
 interface CourseCardProps {
   id?: string;
@@ -11,7 +12,6 @@ interface CourseCardProps {
   image: string;
   duration: string;
   students: number;
-  rating: number;
   category: string;
   price?: number;
   level?: string;
@@ -27,11 +27,12 @@ const levelConfig: Record<string, { label: string; className: string }> = {
 };
 
 export const CourseCard = ({
-  id, title, description, image, duration, students, rating,
+  id, title, description, image, duration, students,
   category, price, level, progress, isNew,isRecommended = false
 }: CourseCardProps) => {
   const navigate = useNavigate();
   const levelInfo = level ? levelConfig[level] : null;
+  
 
   const handleClick = () => {
     // Already enrolled (has progress) → go to learning page
@@ -103,8 +104,7 @@ export const CourseCard = ({
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1"><Clock className="h-4 w-4" /><span>{duration}</span></div>
-          <div className="flex items-center gap-1"><Users className="h-4 w-4" /><span>{students.toLocaleString()}</span></div>
-          <div className="flex items-center gap-1"><Star className="h-4 w-4 fill-warning text-warning" /><span>{rating}</span></div>
+          <div className="flex items-center gap-1"><Users className="h-4 w-4" /><span>{students}</span></div>
         </div>
 
         {progress !== undefined && (

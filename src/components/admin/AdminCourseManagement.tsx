@@ -9,11 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle,AlertDialogTrigger,} from "@/components/ui/alert-dialog";
 import { Search, Eye, EyeOff, Trash2, Users } from "lucide-react";
 import { format } from "date-fns";
+import { useAllUsers } from "@/hooks/useAllUsers";
 
 export const AdminCourseManagement = () => {
   const { courses, isLoading, togglePublish, deleteCourse } = useAllCourses();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const {inscriptionCounts } = useAllUsers();
 
   const filteredCourses = courses.filter((course) => {
     const matchesSearch =
@@ -81,6 +83,7 @@ export const AdminCourseManagement = () => {
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Students</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -124,8 +127,13 @@ export const AdminCourseManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        {course.price}
+                        {course.price}dt
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4 text-muted-foreground" /> 
+                      {inscriptionCounts[course.id] ?? 0} 
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">

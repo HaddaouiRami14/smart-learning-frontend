@@ -5,6 +5,7 @@ interface StatsCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
+  subtitle1?: string;
   icon: LucideIcon;
   trend?: {
     value: number;
@@ -17,6 +18,7 @@ export const StatsCard = ({
   title,
   value,
   subtitle,
+  subtitle1,
   icon: Icon,
   trend,
   variant = "default",
@@ -44,11 +46,21 @@ export const StatsCard = ({
           {subtitle && (
             <p
               className={cn(
-                "text-sm",
+                "text-sm whitespace-nowrap",
                 variant === "default" ? "text-muted-foreground" : "opacity-80"
               )}
             >
               {subtitle}
+            </p>
+          )}
+          {subtitle1 && (
+            <p
+              className={cn(
+                "text-sm",
+                variant === "default" ? "text-muted-foreground" : "opacity-80"
+              )}
+            >
+              {subtitle1}
             </p>
           )}
           {trend && (

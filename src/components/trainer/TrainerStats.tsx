@@ -1,49 +1,50 @@
-import { BookOpen, Users, TrendingUp, DollarSign } from "lucide-react";
+import { BookOpen, Users, TrendingUp, DollarSign, Award } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { useCourses } from "@/hooks/useCourses";
 import { useStudents } from "@/hooks/useStudents";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+
+interface TrainerStats {
+  totalEnrollments: number;
+  totalCompletions: number;
+  avgProgressPercent: number;
+}
 
 export const TrainerStats = () => {
   const { courses, coursesLoading , fetchCourses  } = useCourses();
   const { students } = useStudents();
+  const [stats, setStats] = useState<TrainerStats | null>(null);
 
   const totalCourses =  courses?.length ?? 0;
   const publishedCourses = (courses ?? []).filter((c) => c.isActive).length;
   const totalStudents = students.length;
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
 
   useEffect(() => {
-    fetchCourses(); // ✅ déclenche le fetch au montage
-  }, [fetchCourses]);
-  //const totalEnrollments = enrollments.length;
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/formateur/courses/stats", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (res.ok) setStats(await res.json());
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchStats();
+  }, []);
 
-  // Calculate average completion rate
-  /*const avgCompletion =
-    enrollments.length > 0
-      ? Math.round(
-          enrollments.reduce((sum, e) => sum + e.progress_percent, 0) /
-            enrollments.length
-        )
-      : 0;
-      
-    <StatsCard
-        title="Enrollments"
-        value={totalEnrollments}
-        subtitle="All time"
-        icon={TrendingUp}
-      />
-      <StatsCard
-        title="Avg. Completion"
-        value={`${avgCompletion}%`}
-        subtitle="Across all courses"
-        icon={DollarSign}
-        trend={avgCompletion > 50 ? { value: avgCompletion, isPositive: true } : undefined}
-      />  
-      
-      
-      
-      
-      */
+  const totalEnrollments = stats?.totalEnrollments ?? students.reduce((sum, s) => sum + s.enrolledCourses, 0);
+  const totalCompletions = stats?.totalCompletions ?? 0;
+  const avgCompletion    = totalEnrollments > 0
+  ? Math.round((totalCompletions / totalEnrollments) * 100)
+  : 0;
+  
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -61,6 +62,36 @@ export const TrainerStats = () => {
         icon={Users}
         variant="accent"
       />
+      <StatsCard
+        title="Enrollments"
+        value={totalEnrollments}
+        subtitle={`${totalCompletions} completed`}  
+        icon={TrendingUp}
+      />
+      <TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div>
+        <StatsCard
+          title="Completion rate"
+          value={`${avgCompletion}%`} 
+          subtitle="Across your courses"
+          icon={Award}
+          variant="accent"
+        />
+      </div>
+      </TooltipTrigger>
+          <TooltipContent side="bottom" className="text-xs max-w-[200px]">
+            <p className="font-medium mb-1">Average Completion rate</p>
+            <p className="text-muted-foreground">
+              = courses completed ÷ total enrollments × 100
+            </p>
+            <p className="text-muted-foreground mt-1">
+              {totalCompletions} completed out of {totalEnrollments} enrollments
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       
     </div>
   );

@@ -47,9 +47,11 @@ export const useAdminStats = () => {
           };
         }
 
-        const [usersRes, coursesRes] = await Promise.all([
+        const [usersRes, coursesRes , inscriptionsRes , completedRes] = await Promise.all([
           fetch(`${BASE_URL}/api/admin/users`, requestOptions),
           fetch(`${BASE_URL}/api/admin/courses`, requestOptions),
+          fetch(`${BASE_URL}/api/admin/users/inscriptions`, requestOptions),
+          fetch(`${BASE_URL}/api/admin/users/inscriptions/completed`, requestOptions),
         ]);
 
         if (!usersRes.ok || !coursesRes.ok) {
@@ -58,13 +60,17 @@ export const useAdminStats = () => {
 
         const users = await usersRes.json();
         const courses = await coursesRes.json();
+        const inscriptions = await inscriptionsRes.json();
+        const completedEnrollments = await completedRes.json();
+
+        
 
         // ✅ Count users by role
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const totalTrainers = users.filter((u: any) => u.role === "TRAINER").length;
+        const totalTrainers = users.filter((u: any) => u.role === "FORMATEUR").length;
         
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const totalLearners = users.filter((u: any) => u.role === "LEARNER").length;
+        const totalLearners = users.filter((u: any) => u.role === "APPRENANT").length;
 
         const totalCourses = courses.length;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,8 +82,8 @@ export const useAdminStats = () => {
           totalLearners,
           totalCourses,
           publishedCourses,
-          totalEnrollments: 0, 
-          completedEnrollments: 0, 
+          totalEnrollments: inscriptions, 
+          completedEnrollments,
         });
       } catch (error) {
         console.error("Failed to fetch admin stats:", error);
