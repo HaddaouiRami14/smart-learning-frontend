@@ -15,7 +15,7 @@ const LearnerCourses = () => {
 
   const filteredCourses = courses
     .filter(c =>!searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase()) || c.description?.toLowerCase().includes(searchQuery.toLowerCase()))
-    .filter(c => !filters.category || c.courseCategory === filters.category)
+    .filter(c => !filters.category || c.category === filters.category)
     .filter(c => !filters.level    || c.level          === filters.level)
     .filter(c => filters.minPrice  === undefined       || c.price >= filters.minPrice)
     .filter(c => filters.maxPrice  === undefined       || c.price <= filters.maxPrice);
@@ -65,10 +65,9 @@ const LearnerCourses = () => {
                   title={course.title}
                   description={course.description}
                   image={course.courseImageUrl || ""}
-                  category={course.courseCategory}
+                  category={course.category}
                   duration="Self-paced"
                   students={0}
-                  rating={0}
                   price={course.price}
                   progress={course.progression}
                 />

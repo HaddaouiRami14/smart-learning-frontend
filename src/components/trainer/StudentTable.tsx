@@ -20,8 +20,8 @@ export const StudentTable = () => {
 
   const filteredStudents = students.filter(
     (student) =>
-      student.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.learner_id.toLowerCase().includes(searchQuery.toLowerCase())
+      student.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(student.id).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (isLoading) {
@@ -78,7 +78,7 @@ export const StudentTable = () => {
                 <TableHead>Student</TableHead>
                 <TableHead>Courses Enrolled</TableHead>
                 <TableHead>Avg. Progress</TableHead>
-                <TableHead>Last Active</TableHead>
+                <TableHead>Last Enrollment</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -87,10 +87,11 @@ export const StudentTable = () => {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={student.avatar_url || undefined} />
+                        {/* FIX: Changed 'avatarurl' to 'avatarUrl' to match Java DTO */}
+                        <AvatarImage src={student.avatarUrl || undefined} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                          {student.full_name
-                            ? student.full_name
+                          {student.username
+                            ? student.username
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")
@@ -100,25 +101,29 @@ export const StudentTable = () => {
                       </Avatar>
                       <div>
                         <p className="font-medium text-foreground">
-                          {student.full_name || "Unknown"}
+                          {student.username || "Unknown"}
                         </p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{student.enrolled_courses}</TableCell>
+                  {/* FIX: Changed 'enrolledcourses' to 'enrolledCourses' */}
+                  <TableCell>{student.enrolledCourses}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Progress
-                        value={student.avg_progress}
+                        // FIX: Changed 'avgprogress' to 'avgProgress'
+                        value={student.avgProgress}
                         className="w-20 h-2"
                       />
                       <span className="text-sm text-muted-foreground">
-                        {Math.round(student.avg_progress)}%
+                        {/* FIX: Changed 'avgprogress' to 'avgProgress' */}
+                        {Math.round(student.avgProgress)}%
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {new Date(student.last_active).toLocaleDateString()}
+                    {/* 'lastActive' was already correct here */}
+                    {new Date(student.lastActive).toLocaleDateString()}
                   </TableCell>
                 </TableRow>
               ))}

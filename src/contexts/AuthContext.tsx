@@ -79,7 +79,10 @@ const isTokenExpired = (token: string): boolean => {
 
 // ✅ Nettoie le localStorage et retourne null
 const clearStorage = () => {
-  localStorage.clear();
+   localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("session");
+  localStorage.removeItem("role");
   return null;
 };
 
@@ -315,10 +318,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const signOut = useCallback(async () => {
-    setUser(null);
+     setUser(null);
     setSession(null);
     setRole(null);
-    localStorage.clear();
+    localStorage.removeItem("token");
   }, []);
 
   return (

@@ -52,6 +52,7 @@ export const useAllUsers = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inscriptionCounts, setInscriptionCounts] = useState<Record<string, number>>({});
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
@@ -124,6 +125,25 @@ export const useAllUsers = () => {
     }
   }, []);
 
+  const fetchInscriptionCounts  = useCallback(async () => {
+      try {
+    const response = await fetch(`${API_BASE}/students`, { // ← URL corrigée
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) return;
+
+    // Le backend retourne : [[courseId, count], [courseId, count], ...]
+    const data: Array<[number, number]> = await response.json();
+    const map: Record<string, number> = {};
+    data.forEach(([courseId, count]) => {       // ← déstructuration tableau
+      map[String(courseId)] = Number(count);
+    });
+    setInscriptionCounts(map);
+  } catch (err) {
+    console.error("Error fetching inscription counts:", err);
+  }
+}, []);
+
   const unbanUser = useCallback(async (userId: string) => {
     const endpoint = `${API_BASE}/${userId}/unban`;
 
@@ -160,8 +180,9 @@ export const useAllUsers = () => {
   }, [fetchUsers]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  fetchUsers();
+  fetchInscriptionCounts();
+}, [fetchUsers, fetchInscriptionCounts]);
 
-  return { users, isLoading, error, banUser, unbanUser, refetch };
+  return { users, isLoading, error, banUser,inscriptionCounts, unbanUser, refetch };
 };

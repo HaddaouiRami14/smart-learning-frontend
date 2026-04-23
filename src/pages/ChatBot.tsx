@@ -1,3 +1,4 @@
+import { useTheme } from "@/hooks/useTheme";
 import { useState, useRef, useEffect } from "react";
 
 const API_URL = "/api/chat";
@@ -13,9 +14,13 @@ export default function ChatBot({ apprenantId }) {
   const [input, setInput]     = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
+  const { theme } = useTheme();
+  const messagesContainerRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+  }
   }, [messages]);
 
   const send = async () => {
@@ -62,7 +67,7 @@ export default function ChatBot({ apprenantId }) {
       </div>
 
       {/* Messages */}
-      <div style={styles.messages}>
+      <div style={styles.messages} ref={messagesContainerRef}>
         {messages.map((msg, i) => (
           <div key={i} style={msg.role === "user" ? styles.userMsg : styles.botMsg}>
             {/* Texte */}
@@ -87,7 +92,7 @@ export default function ChatBot({ apprenantId }) {
                     {c.reason && (
                       <p style={styles.courseReason}>💡 {c.reason}</p>
                     )}
-                    <a href={`/courses/${c.courseId}`} style={styles.courseLink}>
+                    <a href={`/courses/${c.courseId}/enroll`} style={styles.courseLink}>
                       Voir le cours →
                     </a>
                   </div>
@@ -103,7 +108,7 @@ export default function ChatBot({ apprenantId }) {
             <span style={styles.typing}>● ● ●</span>
           </div>
         )}
-        <div ref={bottomRef} />
+        
       </div>
 
       {/* Input */}
@@ -132,12 +137,12 @@ const styles: Record<string, React.CSSProperties> = {
     height:        "600px",
     width:         "100%",
     maxWidth:      "480px",
-    border:        "1px solid #e5e7eb",
+    border:       "1px solid hsl(var(--border))",
     borderRadius:  "16px",
     overflow:      "hidden",
     fontFamily:    "system-ui, sans-serif",
     fontSize:      "14px",
-    background:    "#fff",
+    background:   "hsl(var(--background))",
     boxShadow:     "0 4px 24px rgba(0,0,0,0.08)",
   },
   header: {
@@ -145,8 +150,9 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems:     "center",
     gap:            "10px",
     padding:        "16px 20px",
-    background:     "#1a1a2e",
-    color:          "#fff",
+    background: "hsl(var(--card))",
+    color:      "hsl(var(--foreground))",
+    borderBottom: "1px solid hsl(var(--border))",
   },
   dot: {
     width:        "10px",
@@ -162,24 +168,24 @@ const styles: Record<string, React.CSSProperties> = {
     display:    "flex",
     flexDirection: "column",
     gap:        "12px",
-    background: "#f9fafb",
+    background: "hsl(var(--muted))",
   },
   userMsg: {
     alignSelf:    "flex-end",
-    background:   "#4f46e5",
-    color:        "#fff",
+    background: "hsl(var(--primary))",
+    color:      "hsl(var(--primary-foreground))",
     padding:      "10px 14px",
     borderRadius: "16px 16px 4px 16px",
     maxWidth:     "80%",
   },
   botMsg: {
     alignSelf:    "flex-start",
-    background:   "#fff",
-    color:        "#111",
+    background: "hsl(var(--card))",
+    color:      "hsl(var(--foreground))",
     padding:      "12px 16px",
     borderRadius: "16px 16px 16px 4px",
     maxWidth:     "90%",
-    border:       "1px solid #e5e7eb",
+    border:     "1px solid hsl(var(--border))",
   },
   typing: {
     color:      "#9ca3af",
@@ -193,8 +199,8 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop:     "8px",
   },
   courseCard: {
-    background:   "#f0f4ff",
-    border:       "1px solid #c7d2fe",
+    background: "hsl(var(--muted))",
+    border:     "1px solid hsl(var(--border))",
     borderRadius: "10px",
     padding:      "10px 12px",
   },
@@ -219,12 +225,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   courseDesc: {
     margin:  "4px 0",
-    color:   "#6b7280",
+    color: "hsl(var(--muted-foreground))",
     fontSize:"12px",
+    
   },
   courseReason: {
     margin:     "4px 0 8px",
-    color:      "#4b5563",
+    color: "hsl(var(--muted-foreground))",
     fontSize:   "12px",
     fontStyle:  "italic",
   },
@@ -238,16 +245,19 @@ const styles: Record<string, React.CSSProperties> = {
     display:   "flex",
     gap:       "8px",
     padding:   "12px 16px",
-    borderTop: "1px solid #e5e7eb",
-    background:"#fff",
+    borderTop:  "1px solid hsl(var(--border))",
+    background: "hsl(var(--background))",
+    
   },
   input: {
     flex:        1,
     padding:     "10px 14px",
     borderRadius:"10px",
-    border:      "1px solid #d1d5db",
+    border:     "1px solid hsl(var(--border))",
     fontSize:    "14px",
     outline:     "none",
+    background: "hsl(var(--background))",
+    color:      "hsl(var(--foreground))",
   },
   sendBtn: {
     padding:      "10px 18px",

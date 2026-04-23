@@ -67,7 +67,7 @@ export const Header = ({ searchQuery = "", onSearchChange }: HeaderProps) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search courses, skills, or topics..."
+              placeholder="Search courses..."
               value={searchQuery}
               onChange={(e) => onSearchChange?.(e.target.value)}
               className="pl-10 bg-muted/50 border-0 focus-visible:ring-secondary"
@@ -128,10 +128,6 @@ export const Header = ({ searchQuery = "", onSearchChange }: HeaderProps) => {
               <DropdownMenuItem onClick={goToProfile} className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
                 Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

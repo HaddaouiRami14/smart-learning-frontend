@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useStudents } from "@/hooks/useStudents";
 
 interface TrainerSidebarProps {
   activeTab: string;
@@ -24,13 +25,12 @@ const mainLinks = [
   { id: "analytics", icon: BarChart3, label: "Analytics" },
 ];
 
-const secondaryLinks = [
-  { to: "/settings", icon: Settings, label: "Settings" },
-  { to: "/help", icon: HelpCircle, label: "Help Center" },
-];
+
 
 export const TrainerSidebar = ({ activeTab, onTabChange }: TrainerSidebarProps) => {
   const navigate = useNavigate();
+  const { students } = useStudents();
+  const totalStudents = students.length;
 
   return (
     <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-border bg-card p-4 overflow-y-auto">
@@ -44,11 +44,12 @@ export const TrainerSidebar = ({ activeTab, onTabChange }: TrainerSidebarProps) 
             </div>
             <div>
               <p className="text-sm opacity-90">Active Students</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">{totalStudents}</p>
             </div>
           </div>
           <p className="text-xs opacity-75">Across all your courses</p>
         </div>
+
 
         {/* Main Navigation */}
         <nav className="space-y-1">
@@ -67,22 +68,7 @@ export const TrainerSidebar = ({ activeTab, onTabChange }: TrainerSidebarProps) 
           ))}
         </nav>
 
-        {/* Secondary Navigation */}
-        <div className="pt-4 border-t border-border">
-          <nav className="space-y-1">
-            {secondaryLinks.map((link) => (
-              <Button
-                key={link.to}
-                variant="ghost"
-                className="w-full justify-start gap-3"
-                onClick={() => navigate(link.to)}
-              >
-                <link.icon className="h-5 w-5" />
-                {link.label}
-              </Button>
-            ))}
-          </nav>
-        </div>
+        
       </div>
     </aside>
   );

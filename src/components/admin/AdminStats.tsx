@@ -1,9 +1,12 @@
 import { useAdminStats } from "@/hooks/useAdminStats";
-import { Users, BookOpen, GraduationCap, TrendingUp } from "lucide-react";
+import { Users, BookOpen, GraduationCap, TrendingUp, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAllUsers } from "@/hooks/useAllUsers";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 export const AdminStats = () => {
   const { stats, isLoading } = useAdminStats();
+  
 
   const statCards = [
     {
@@ -58,11 +61,12 @@ export const AdminStats = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {statCards.map((stat) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    {statCards.map((stat) => {
+      const card = (
         <Card key={stat.title}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
               {stat.title}
             </CardTitle>
             <stat.icon className={`h-5 w-5 ${stat.color}`} />
@@ -72,7 +76,31 @@ export const AdminStats = () => {
             <p className="text-xs text-muted-foreground">{stat.description}</p>
           </CardContent>
         </Card>
-      ))}
-    </div>
-  );
+      );
+
+      if (stat.title === "Completion Rate") {
+        return (
+          <TooltipProvider key={stat.title}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>{card}</div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs max-w-[200px]">
+                <p className="font-medium mb-1">Average Completion Rate</p>
+                <p className="text-muted-foreground">
+                  = courses completed ÷ total enrollments × 100
+                </p>
+                <p className="text-muted-foreground mt-1">
+                  {stats.completedEnrollments} completed out of {stats.totalEnrollments} enrollments
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
+      return card;
+    })}
+  </div>
+);
 };

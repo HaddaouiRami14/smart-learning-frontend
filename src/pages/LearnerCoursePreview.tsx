@@ -370,7 +370,7 @@ const LearnerCoursePreview = () => {
     <div className="min-h-screen flex items-center justify-center flex-col">
       <AlertCircle className="w-20 h-20 text-red-500 mb-4" />
       <p>Course not found</p>
-      <button onClick={() => navigate(-1)}>Go Back</button>
+      <button onClick={() => navigate("/dashboard")}>Go Back</button>
     </div>
   );
 
@@ -380,7 +380,7 @@ const LearnerCoursePreview = () => {
       {/* Sticky Header */}
       <div className="sticky top-0 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-foreground hover:text-muted-foreground transition-colors">
+          <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-foreground hover:text-muted-foreground transition-colors">
             <ChevronLeft className="w-5 h-5" /> Back
           </button>
 
