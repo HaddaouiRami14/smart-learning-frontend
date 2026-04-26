@@ -637,7 +637,7 @@ const LearnerCoursePreview = () => {
                     <div>
                       <h3 className="text-2xl font-bold text-foreground">{quiz.title}</h3>
                       {quiz.description && <p className="text-muted-foreground">{quiz.description}</p>}
-                      <p className="text-sm text-purple-600 font-medium mt-2">Passing Score: {quiz.passingScore}% • {quiz.questions.length} Questions</p>
+                      <p className="text-sm text-purple-600 font-medium mt-2"> {quiz.questions.length} Questions</p>
                     </div>
                   </div>
 
@@ -733,7 +733,7 @@ const LearnerCoursePreview = () => {
                         </div>
                         <h4 className="text-2xl font-bold text-foreground">{quizResult.passed ? '🎉 Congratulations!' : '📚 Keep Learning!'}</h4>
                         <p className="text-muted-foreground mt-1">You scored {quizResult.score}% ({quizResult.correctAnswers}/{quizResult.totalQuestions} correct)</p>
-                        <p className={`text-sm font-medium ${quizResult.passed ? 'text-green-600' : 'text-red-600'}`}>Passing score: {quizResult.passingScore}%</p>
+                        
                       </div>
                       <div className="space-y-3">
                         <h5 className="font-semibold text-foreground mb-3">Question Review:</h5>

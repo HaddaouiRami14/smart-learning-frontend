@@ -9,7 +9,7 @@ import { useEnrolledCourses } from "@/hooks/useEnrolledCourses";
 const DEFAULT_FILTERS: LearnerCourseFilters = {};
 
 const LearnerCourses = () => {
-  const { courses, isLoading, error } = useEnrolledCourses();
+  const { courses, isLoading, error , inscriptionCounts } = useEnrolledCourses();
   const [filters, setFilters] = useState<LearnerCourseFilters>(DEFAULT_FILTERS);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -67,8 +67,9 @@ const LearnerCourses = () => {
                   image={course.courseImageUrl || ""}
                   category={course.category}
                   duration="Self-paced"
-                  students={0}
+                  students={inscriptionCounts[course.courseId] ?? 0}
                   price={course.price}
+                  level={course.level} 
                   progress={course.progression}
                 />
               </div>
